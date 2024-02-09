@@ -142,7 +142,7 @@ class Hand():
     def getshuntsu(self,suit):
         shapes = []
         tempSuit = suit.copy()
-        for i in range(len(tempSuit) - 2):
+        for i in range(len(tempSuit)):
             if tempSuit.count(tempSuit[i][0] + str(int(tempSuit[i][-1]) + 1)) > 0 and tempSuit.count(tempSuit[i][0] + str(int(tempSuit[i][-1]) + 2)) > 0:
                 shapes.append((tempSuit[i],tempSuit[i][0] + str(int(tempSuit[i][-1]) + 1),tempSuit[i][0] + str(int(tempSuit[i][-1]) + 2)))
         return shapes
@@ -164,24 +164,26 @@ class Hand():
         possibleWins = []
         for i in range(len(list)):
             if list[i] in ["AM5", "AP5", "AS5"]:
-                list[i] = self.akaDict.get(list[i])
-            tempList.append(list[i])
+                tempList.append(self.akaDict.get(list[i]))
+            else:
+                tempList.append(list[i])
 
         if len(tempList) == 14:
             potentialHeads = self.getHead(tempList)
             if len(potentialHeads) > 0:
                 for head in potentialHeads:
-                    tempList = self.hand.copy()
-                    tempList.remove(head)
-                    tempList.remove(head)
-                    if self.getmentsu(tempList):
-                        possibleWins.append(tempList)
+                    temp = tempList.copy()
+                    temp.remove(head)
+                    temp.remove(head)
+                    if self.getmentsu(temp):
+                        possibleWins.append(temp)
 
         if len(possibleWins) > 0:
             self.validHand = True
-            print("2")
+            print("True")
         else:
             self.validHand = False
+            print("False")
 
     def displayTileNumber(self):
         for i in range(len(self.hand)):
@@ -197,6 +199,5 @@ class Hand():
     def display(self):
         self.displayHand()
         self.displayTileNumber()
-        print(self.validHand)
 
 hand = Hand()
