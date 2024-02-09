@@ -19,6 +19,7 @@ def main():
                         y = (mos[1] - (HEIGHT - HMARGIN - TILEHEIGHT * 4)) // TILEHEIGHT
                         hand.addTile((x + y * 10))
 
+
                     if (WMARGIN < mos[0] < WMARGIN + TILEWIDTH * len(hand.hand) and HMARGIN < mos[1] < HMARGIN + TILEHEIGHT):
                         tile = (mos[0] - WMARGIN) // TILEWIDTH
                         hand.removeTile(tile)
@@ -28,6 +29,8 @@ def main():
                             hand.sort()
                         if clearButton.getClicked(mos):
                             hand.clear()
+                        if otherButton.getClicked(mos):
+                            hand.checkWin(hand.hand)
 
 
         display()
