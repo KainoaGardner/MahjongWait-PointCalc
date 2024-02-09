@@ -7,6 +7,22 @@ class Hand():
         self.akaDict = {"AM5":"M5", "AP5":"P5", "AS5":"S5"}
         self.validHand = False
         self.tenpai = False
+        self.winTiles = []
+
+        self.machitext = self.font.render("待ち",True,white)
+        self.machiRect = self.machitext.get_rect(midleft=(WMARGIN, HMARGIN + TILEHEIGHT + TILEHEIGHT // 2))
+
+        self.callType = ""
+        self.shader = pygame.Surface((TILEWIDTH,TILEHEIGHT))
+        self.shader.fill("#4b4b4b")
+        self.shader.set_alpha(100)
+
+        self.buttonShader = 0
+
+        self.dora = ""
+        self.doraSelect = False
+        self.doraText = self.font.render("ドラ", True, white)
+        self.doraTextRect = self.machitext.get_rect(center=(WMARGIN + TILEWIDTH * 15 + TILEWIDTH // 2,TILEHEIGHT // 2))
 
     def addTile(self,tile):
         if len(self.hand) < 14:
@@ -15,16 +31,30 @@ class Hand():
                 self.hand.append(tile)
                 if len(self.hand) == 14:
                     self.checkWin(self.hand)
+                    self.tenpai = False
+                    self.winTiles.clear()
+                if len(self.hand) == 13:
+                    self.checkTenpai()
+
             elif tile not in ["AM5", "AP5", "AS5"] and self.hand.count(tile) < 4:
                 self.hand.append(tile)
                 if len(self.hand) == 14:
                     self.checkWin(self.hand)
+                    self.tenpai = False
+                    self.winTiles.clear()
+                if len(self.hand) == 13:
+                    self.checkTenpai()
 
 
     def removeTile(self,tile):
         if len(self.hand) > 0:
             del self.hand[tile]
             self.validHand = False
+            if len(self.hand) == 13:
+                self.checkTenpai()
+            else:
+                self.tenpai = False
+                self.winTiles.clear()
 
     def sort(self):
         tempHand = []
@@ -133,11 +163,17 @@ class Hand():
                         if shape not in confirmedSuitShapes:
                             confirmedSuitShapes.append(shape)
 
-                for shape in confirmedSuitShapes:
-                    possibleShapes.append(shape)
+                elif len(tempSuit) > 0:
+                    confirmedShapes = []
 
-            if len(possibleShapes) >= 4:
-                return True
+                if len(confirmedSuitShapes) > 0:
+                    for shape in confirmedSuitShapes:
+                        if shape not in possibleShapes:
+                            possibleShapes.append(shape)
+
+        if len(possibleShapes) >= 4:
+            return True
+        return False
 
     def getshuntsu(self,suit):
         shapes = []
@@ -179,15 +215,57 @@ class Hand():
                         possibleWins.append(temp)
 
         if len(possibleWins) > 0:
-            self.validHand = True
-            print("True")
+            return True
         else:
-            self.validHand = False
-            print("False")
+            return False
+
+    def checkTenpai(self):
+        for tile in tiles.tiles:
+            if tile not in ["AM5", "AP5", "AS5"]:
+                temp = self.hand.copy()
+                temp.append(tile)
+                if self.checkWin(temp):
+                    self.winTiles.append(tile)
+
+    def makeCall(self):
+        if self.callType != "":
+            print(self.callType)
+
+    def displayButtonShader(self):
+        if self.buttonShader != 0:
+            for i in range(1,5):
+                if i == self.buttonShader:
+                    continue
+                else:
+                    screen.blit(self.shader,(WMARGIN + TILEWIDTH * 2 + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * (i)))
+            for i in range(5,8):
+                if i == self.buttonShader:
+                    continue
+                else:
+                    screen.blit(self.shader,(WMARGIN + TILEWIDTH * 2 + TILEWIDTH * 2 + TILEWIDTH * i,HEIGHT - HMARGIN - TILEHEIGHT))
+
+
+    def displayDora(self):
+        screen.blit(self.doraText,self.doraTextRect)
+        if self.dora != "":
+            screen.blit(tiles.tileDict.get(self.dora),(WMARGIN + TILEWIDTH * 15,HMARGIN))
+        else:
+            screen.blit(tiles.tileBack,(WMARGIN + TILEWIDTH * 15,HMARGIN))
+
+
+    def displayTenpai(self):
+        if len(self.hand) == 13 and len(self.winTiles) > 0:
+            self.displayWinTiles()
+            screen.blit(self.machitext,self.machiRect)
+
+    def displayWinTiles(self):
+        for i in range(len(self.winTiles)):
+            pos = (WMARGIN + TILEWIDTH * i,HMARGIN + TILEHEIGHT * 2)
+            screen.blit(tiles.tileDict.get(self.winTiles[i]),pos)
 
     def displayTileNumber(self):
         for i in range(len(self.hand)):
-            tileNumber = self.font.render(str(i + 1),True,"#ecf0f1")
+            tileNumber = self.font.render(str(i + 1),True,white)
             tileNumberRect = tileNumber.get_rect(center = (WMARGIN + TILEWIDTH // 2 + TILEWIDTH * i,TILEHEIGHT // 2))
             screen.blit(tileNumber,tileNumberRect)
 
@@ -199,5 +277,9 @@ class Hand():
     def display(self):
         self.displayHand()
         self.displayTileNumber()
+        self.displayTenpai()
+        self.makeCall()
+        self.displayDora()
+
 
 hand = Hand()

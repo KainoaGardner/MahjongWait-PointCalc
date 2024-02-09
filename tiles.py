@@ -6,6 +6,9 @@ class Tiles():
         self.createTiles()
         self.tileSelect = []
 
+        self.tileBack = pygame.image.load("graphics/tiles/B0.png").convert()
+
+
     def createTiles(self):
         for suit in ["M","P","S"]:
             for number in range(1,10):
@@ -24,6 +27,10 @@ class Tiles():
             self.tiles.append(tile)
             self.tileDict.update({tile:image})
 
+    def notNaki(self):
+        for i in range(3):
+            pos = (WMARGIN + TILEWIDTH * 12,HEIGHT - HMARGIN - TILEHEIGHT * 4 + TILEHEIGHT * i)
+            screen.blit(self.tileBack,pos)
 
     def displayTiles(self):
         for i in range(len(self.tiles)):
