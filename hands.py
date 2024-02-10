@@ -6,8 +6,8 @@ class Hand():
         self.font = font
         self.akaDict = {"AM5":"M5", "AP5":"P5", "AS5":"S5"}
         self.validHand = False
-        self.tenpai = False
         self.winTiles = []
+        self.point = 0
 
         self.machitext = self.font.render("待ち",True,white)
         self.machiRect = self.machitext.get_rect(midleft=(WMARGIN, HMARGIN + TILEHEIGHT + TILEHEIGHT // 2))
@@ -16,6 +16,7 @@ class Hand():
         self.shader = pygame.Surface((TILEWIDTH,TILEHEIGHT))
         self.shader.fill("#4b4b4b")
         self.shader.set_alpha(100)
+        self.callIndex = []
 
         self.buttonShader = 0
 
@@ -24,26 +25,36 @@ class Hand():
         self.doraText = self.font.render("ドラ", True, white)
         self.doraTextRect = self.machitext.get_rect(center=(WMARGIN + TILEWIDTH * 15 + TILEWIDTH // 2,TILEHEIGHT // 2))
 
+        self.agari = False
+        self.agariText = self.font.render("和了", True, white)
+        self.agariTextRect = self.machitext.get_rect(center=(WIDTH // 2,HMARGIN + TILEHEIGHT + TILEHEIGHT // 2))
+
+        self.confirmedWins = []
+
     def addTile(self,tile):
         if len(self.hand) < 14:
             tile = tiles.tiles[tile]
             if tile in ["AM5", "AP5", "AS5"] and self.hand.count(tile) < 1:
                 self.hand.append(tile)
                 if len(self.hand) == 14:
-                    self.checkWin(self.hand)
+                    if self.checkWin(self.hand):
+                        self.agari = True
                     self.tenpai = False
                     self.winTiles.clear()
                 if len(self.hand) == 13:
                     self.checkTenpai()
+                    self.agari = False
 
             elif tile not in ["AM5", "AP5", "AS5"] and self.hand.count(tile) < 4:
                 self.hand.append(tile)
                 if len(self.hand) == 14:
-                    self.checkWin(self.hand)
+                    if self.checkWin(self.hand):
+                        self.agari = True
                     self.tenpai = False
                     self.winTiles.clear()
                 if len(self.hand) == 13:
                     self.checkTenpai()
+                    self.agari = False
 
 
     def removeTile(self,tile):
@@ -120,73 +131,59 @@ class Hand():
 
         return potentialHeads
 
-    def getmentsu(self,list):
-        suits = self.splitSuits(list)
+    def getmentsu(self,list,head):
+        head = head
+        confirmedShapes = []
+        list.remove(head)
+        list.remove(head)
+
         possibleShapes = []
-        for suit in suits:
-            possibleSuitShape = []
-            confirmedSuitShapes = []
-            if len(suit) == 0:
-                continue
-            if len(suit) % 3 != 0:
-                break
 
-            shuntsu = []
-            koutsu = []
+        koutsu = self.getkoutsu(list)
+        for shape in koutsu:
+            possibleShapes.append(shape)
 
-            if suit[0][0] != "H":
-                shuntsu = self.getshuntsu(suit)
-
-            koutsu = self.getkoutsu(suit)
-            for shape in shuntsu:
-                possibleSuitShape.append(shape)
-
-            for shape in koutsu:
-                possibleSuitShape.append(shape)
-
-            for i in range(len(possibleSuitShape)):
-                tempSuit = suit.copy()
-                confirmedShapes = []
-                confirmedShapes.append(possibleSuitShape[i])
-                for tile in possibleSuitShape[i]:
-                    tempSuit.remove(tile)
-                if len(tempSuit) > 0:
-                    for j in range(len(possibleSuitShape)):
-                        if i != j and len(tempSuit) > 0:
-                            if (tempSuit.count(possibleSuitShape[j][0]) == 1 and tempSuit.count(possibleSuitShape[j][1]) == 1 and tempSuit.count(possibleSuitShape[j][2]) == 1) or (tempSuit.count(possibleSuitShape[j][0]) == 3 and tempSuit.count(possibleSuitShape[j][1]) == 3 and tempSuit.count(possibleSuitShape[j][2]) == 3):
-                                confirmedShapes.append(possibleSuitShape[j])
-                                for tile in possibleSuitShape[j]:
-                                    tempSuit.remove(tile)
-
-                if len(tempSuit) == 0:
-                    for shape in confirmedShapes:
-                        if shape not in confirmedSuitShapes:
-                            confirmedSuitShapes.append(shape)
-
-                elif len(tempSuit) > 0:
-                    confirmedShapes = []
-
-                if len(confirmedSuitShapes) > 0:
-                    for shape in confirmedSuitShapes:
-                        if shape not in possibleShapes:
-                            possibleShapes.append(shape)
+        shuntsu = self.getshuntsu(list)
+        for shape in shuntsu:
+            possibleShapes.append(shape)
 
         if len(possibleShapes) >= 4:
-            return True
-        return False
+            for i in range(len(possibleShapes)):
+                tempList = list.copy()
+                shapes = []
+                shapes.append(possibleShapes[i])
+                for tile in possibleShapes[i]:
+                    tempList.remove(tile)
+                for j in range(len(possibleShapes)):
+                    if i != j:
+                        if (possibleShapes[j].count(possibleShapes[j][0]) == 3 and tempList.count(possibleShapes[j][0]) >= 3) or (possibleShapes[j].count(possibleShapes[j][0]) == 1 and possibleShapes[j][0] in tempList and possibleShapes[j][1] in tempList and possibleShapes[j][2] in tempList):
+                            shapes.append(possibleShapes[j])
+                            for tile in possibleShapes[j]:
+                                tempList.remove(tile)
+                if len(tempList) == 0:
+                    if len(confirmedShapes) > 0:
+                        for confirmedShape in confirmedShapes:
+                            for shape in shapes:
+                                if shape not in confirmedShape:
+                                    confirmedShapes.append(shapes)
+                                    break
+                    else:
+                        confirmedShapes.append(shapes)
 
-    def getshuntsu(self,suit):
+        return confirmedShapes
+
+    def getshuntsu(self,list):
         shapes = []
-        tempSuit = suit.copy()
+        tempSuit = list.copy()
         for i in range(len(tempSuit)):
             if tempSuit.count(tempSuit[i][0] + str(int(tempSuit[i][-1]) + 1)) > 0 and tempSuit.count(tempSuit[i][0] + str(int(tempSuit[i][-1]) + 2)) > 0:
                 shapes.append((tempSuit[i],tempSuit[i][0] + str(int(tempSuit[i][-1]) + 1),tempSuit[i][0] + str(int(tempSuit[i][-1]) + 2)))
         return shapes
 
-    def getkoutsu(self,suit):
+    def getkoutsu(self,list):
         shapes = []
-        for tile in suit:
-            if suit.count(tile) >= 3 and tile not in shapes:
+        for tile in list:
+            if list.count(tile) >= 3 and tile not in shapes:
                 shapes.append(tile)
 
         if len(shapes) > 0:
@@ -207,14 +204,28 @@ class Hand():
         if len(tempList) == 14:
             potentialHeads = self.getHead(tempList)
             if len(potentialHeads) > 0:
-                for head in potentialHeads:
-                    temp = tempList.copy()
-                    temp.remove(head)
-                    temp.remove(head)
-                    if self.getmentsu(temp):
-                        possibleWins.append(temp)
+                    for head in potentialHeads:
+                        temp = tempList.copy()
+                        win = self.getmentsu(temp,head)
+                        if len(win) > 0:
+                            for hand in win:
+                                if hand not in possibleWins:
+                                    count = 0
+                                    if len(possibleWins) > 0:
+                                        for winHand in possibleWins:
+                                            for shape in hand:
+                                                if shape in winHand:
+                                                    count += 1
+                                        if count < 4:
+                                            hand.append((head,head))
+                                            possibleWins.append(hand)
+                                    else:
+                                        hand.append((head, head))
+                                        possibleWins.append(hand)
 
         if len(possibleWins) > 0:
+            print("True")
+            self.confirmedWins.append(possibleWins[0])
             return True
         else:
             return False
@@ -231,19 +242,55 @@ class Hand():
         if self.callType != "":
             print(self.callType)
 
+    def getChi(self,tile):
+        print(tile)
+        if len(self.callIndex) > 0:
+            for index in self.callIndex:
+                if index + 3 <= tile or tile <= index - 3:
+                    print(tile)
+        else:
+            if tile < len(self.hand) - 2:
+                print(self.hand.count(self.hand[tile]))
+                if self.hand.count(self.hand[tile]) > 0 and self.hand.count(self.hand[tile][0] + str(int(self.hand[tile][1]) + 1)) > 0 and self.hand.count(self.hand[tile][0] + str(int(self.hand[tile][1]) + 2)) > 0:
+                    if self.hand.index(self.hand[tile][0] + str(int(self.hand[tile][1]) + 1)) == tile + 1 and self.hand.index(self.hand[tile][0] + str(int(self.hand[tile][1]) + 2)) == tile + 2:
+                        self.callIndex.append(tile)
+                    else:
+                        temp1 = self.hand[tile + 1]
+                        temp2 = self.hand[tile + 2]
+                        moveIndex1 = self.hand.index(self.hand[tile][0] + str(int(self.hand[tile][1]) + 1))
+                        moveIndex2 = self.hand.index(self.hand[tile][0] + str(int(self.hand[tile][1]) + 2))
+                        self.hand[tile + 1] = self.hand[moveIndex1]
+                        self.hand[tile + 2] = self.hand[moveIndex2]
+                        self.hand[moveIndex1] = temp1
+                        self.hand[moveIndex2] = temp2
+                        self.callIndex.append(tile)
+
+    def getPon(self,tile):
+        pass
+
+    def getKan(self,tile):
+        pass
+
+    def getAnKan(self,tile):
+        pass
+
     def displayButtonShader(self):
         if self.buttonShader != 0:
             for i in range(1,5):
                 if i == self.buttonShader:
                     continue
                 else:
-                    screen.blit(self.shader,(WMARGIN + TILEWIDTH * 2 + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * (i)))
+                    screen.blit(self.shader,(WMARGIN  + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * (i)))
             for i in range(5,8):
                 if i == self.buttonShader:
                     continue
                 else:
-                    screen.blit(self.shader,(WMARGIN + TILEWIDTH * 2 + TILEWIDTH * 2 + TILEWIDTH * i,HEIGHT - HMARGIN - TILEHEIGHT))
+                    screen.blit(self.shader,(WMARGIN  + TILEWIDTH * 2 + TILEWIDTH * i,HEIGHT - HMARGIN - TILEHEIGHT))
 
+    def displayCalls(self):
+        for call in self.callIndex:
+            for i in range(3):
+                screen.blit(self.shader,(WMARGIN + TILEWIDTH * call + TILEWIDTH * i,HMARGIN))
 
     def displayDora(self):
         screen.blit(self.doraText,self.doraTextRect)
@@ -263,6 +310,17 @@ class Hand():
             pos = (WMARGIN + TILEWIDTH * i,HMARGIN + TILEHEIGHT * 2)
             screen.blit(tiles.tileDict.get(self.winTiles[i]),pos)
 
+
+    def displayWin(self):
+        if len(self.hand) == 14 and self.agari:
+            screen.blit(self.agariText,self.agariTextRect)
+            for hand in self.confirmedWins:
+                for i,shape in enumerate(hand):
+                    for j,tile in enumerate(shape):
+                        screen.blit(tiles.tileDict.get(tile),(WMARGIN + TILEWIDTH * (j + i * 3) + TILEWIDTH // 2* i,HMARGIN + TILEHEIGHT * 2))
+    def displayScore(self):
+        pass
+
     def displayTileNumber(self):
         for i in range(len(self.hand)):
             tileNumber = self.font.render(str(i + 1),True,white)
@@ -277,9 +335,12 @@ class Hand():
     def display(self):
         self.displayHand()
         self.displayTileNumber()
+        self.displayCalls()
         self.displayTenpai()
         self.makeCall()
         self.displayDora()
+        self.displayWin()
+
 
 
 hand = Hand()

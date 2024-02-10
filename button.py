@@ -21,16 +21,16 @@ class Button(pygame.sprite.Sprite):
 buttonGroup = pygame.sprite.Group()
 callButtonGroup = pygame.sprite.Group()
 
-sortButton = Button("理",(WMARGIN + TILEWIDTH * 2 + TILEWIDTH * 7,HEIGHT - HMARGIN - TILEHEIGHT))
-clearButton = Button("消",(WMARGIN + TILEWIDTH * 2 + TILEWIDTH * 8,HEIGHT - HMARGIN - TILEHEIGHT))
-doraButton = Button("ドラ",(WMARGIN + TILEWIDTH * 2 + TILEWIDTH * 9,HEIGHT - HMARGIN - TILEHEIGHT))
+sortButton = Button("理",(WMARGIN  + TILEWIDTH * 7,HEIGHT - HMARGIN - TILEHEIGHT))
+clearButton = Button("消",(WMARGIN  + TILEWIDTH * 8,HEIGHT - HMARGIN - TILEHEIGHT))
+doraButton = Button("ドラ",(WMARGIN  + TILEWIDTH * 9,HEIGHT - HMARGIN - TILEHEIGHT))
 
 buttons = [sortButton,clearButton,doraButton]
 
-chiButton = Button("チー",(WMARGIN + TILEWIDTH * 2 + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * 4))
-ponButton = Button("ポン",(WMARGIN + TILEWIDTH * 2 + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * 3))
-kanButton = Button("カン",(WMARGIN + TILEWIDTH * 2 + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * 2))
-ankanButton = Button("暗槓",(WMARGIN + TILEWIDTH * 2 + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * 1))
+chiButton = Button("チー",(WMARGIN  + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * 4))
+ponButton = Button("ポン",(WMARGIN  + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * 3))
+kanButton = Button("カン",(WMARGIN + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * 2))
+ankanButton = Button("暗槓",(WMARGIN  + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * 1))
 
 callButtons = [chiButton,ponButton,kanButton,ankanButton]
 
