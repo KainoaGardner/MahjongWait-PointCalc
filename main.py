@@ -27,7 +27,7 @@ def main():
                         hand.doraSelect = False
                         hand.buttonShader = 0
 
-                    elif (WMARGIN < mos[0] < WMARGIN + TILEWIDTH * len(hand.hand) and HMARGIN < mos[1] < HMARGIN + TILEHEIGHT):
+                    elif (WMARGIN < mos[0] < WMARGIN + TILEWIDTH * (len(hand.hand) + len(hand.handCalls) - hand.kanCount) and HMARGIN < mos[1] < HMARGIN + TILEHEIGHT):
                         tile = (mos[0] - WMARGIN) // TILEWIDTH
                         if hand.callType == "chi":
                             hand.getChi(tile)
@@ -39,11 +39,12 @@ def main():
                             hand.getAnkan(tile)
                         else:
                             hand.removeTile(tile)
+
                         hand.callType = ""
                         hand.doraSelect = False
                         hand.buttonShader = 0
 
-                    elif (WMARGIN + TILEWIDTH * 15 < mos[0] < WMARGIN + TILEWIDTH * 16 and HMARGIN < mos[1] < HMARGIN + TILEHEIGHT):
+                    elif (WIDTH - WMARGIN - TILEWIDTH < mos[0] < WIDTH - WMARGIN  and HMARGIN < mos[1] < HMARGIN + TILEHEIGHT):
                         if hand.dora != "":
                             hand.dora = ""
                             hand.buttonShader = 0
