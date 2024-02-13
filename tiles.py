@@ -27,10 +27,6 @@ class Tiles():
             self.tiles.append(tile)
             self.tileDict.update({tile:image})
 
-    # def notNaki(self):
-    #     for i in range(3):
-    #         pos = (WMARGIN + TILEWIDTH * 12,HEIGHT - HMARGIN - TILEHEIGHT * 4 + TILEHEIGHT * i)
-    #         screen.blit(self.tileBack,pos)
 
     def displayTiles(self):
         for i in range(len(self.tiles)):
