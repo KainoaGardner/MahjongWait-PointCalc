@@ -27,10 +27,15 @@ class Tiles():
             self.tiles.append(tile)
             self.tileDict.update({tile:image})
 
+        tile = "B0"
+        image = pygame.image.load(f"graphics/tiles/{tile}.png").convert()
+        self.tiles.append(tile)
+        self.tileDict.update({tile: image})
+
 
     def displayTiles(self):
-        for i in range(len(self.tiles)):
-            pos = (WMARGIN + TILEWIDTH * (i % 10),HEIGHT - HMARGIN - TILEHEIGHT * 4 + TILEHEIGHT * (i // 10))
+        for i in range(len(self.tiles) - 1):
+            pos = (WMARGIN + TILEWIDTH * (i % 10),HEIGHT - HMARGIN - TILEHEIGHT * 5 + TILEHEIGHT * (i // 10))
             screen.blit(self.tileDict.get(self.tiles[i]),pos)
 
 

@@ -1,5 +1,5 @@
 from tiles import *
-
+from score import *
 class Hand():
     def __init__(self):
         self.hand = []
@@ -33,7 +33,19 @@ class Hand():
         self.agariText = self.font.render("和了", True, white)
         self.agariTextRect = self.machitext.get_rect(center=(WIDTH // 2,HMARGIN + TILEHEIGHT + TILEHEIGHT // 2))
 
+        self.bakaze = ["H1","H2","H3","H4"]
+        self.bakazeIndex = 0
+        self.jikaze = ["H1","H2","H3","H4"]
+        self.jikazeIndex = 0
+
+        self.bakazeText = self.font.render("場風",True,white)
+        self.bakazeRect = self.bakazeText.get_rect(center = (WMARGIN + TILEWIDTH * 8 + TILEWIDTH // 2,HEIGHT - HMARGIN+ TILEWIDTH // 2))
+
+        self.jikazeText = self.font.render("自風",True,white)
+        self.jikazeRect = self.jikazeText.get_rect(center = (WMARGIN + TILEWIDTH * 9 + TILEWIDTH // 2,HEIGHT - HMARGIN + TILEWIDTH // 2))
+
         self.confirmedWins = []
+
 
     def addTile(self,tile):
         if len(self.hand) + len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount < 14:
@@ -44,9 +56,7 @@ class Hand():
                     if self.checkWin(self.hand):
                         self.agari = True
                     self.tenpai = False
-                    self.winTiles.clear()
                 if len(self.hand) + len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount == 13:
-                    print("2")
                     self.checkTenpai()
                     self.agari = False
                 print(("len", len(self.hand) + len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount))
@@ -57,8 +67,14 @@ class Hand():
             if len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) > 0:
                 if tile >= len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan):
                     del self.hand[tile - len(self.handCalls) - len(self.handCallsKan) - len(self.handCallsAnkan)]
-                elif tile >= len(self.handCalls) + len(self.handCallsKan) and False:
-                    pass
+                elif tile >= len(self.handCalls) + len(self.handCallsKan):
+                    if (tile - len(self.handCalls) + len(self.handCallsKan)) % 4 == 0:
+                        for _ in range(4):
+                            del self.handCallsAnkan[0]
+                        self.kanCount -= 1
+                        score.rinshan = False
+
+
                 elif tile >= len(self.handCalls):
                     clickedTile = self.handCallsKan[tile]
                     if clickedTile in ["AM5", "AP5", "AS5"]:
@@ -70,6 +86,8 @@ class Hand():
                             for _ in range(4):
                                 del self.handCallsKan[tile - len(self.handCalls)]
                             self.kanCount -= 1
+                            score.rinshan = False
+
                 else:
                     clickedTile = self.handCalls[tile]
                     if clickedTile in ["AM5", "AP5", "AS5"]:
@@ -83,12 +101,19 @@ class Hand():
                             for _ in range(3):
                                 del self.handCalls[tile]
 
+                if len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount + len(
+                        self.hand) == 13:
+                    self.checkTenpai()
+                elif len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount + len(
+                        self.hand) == 14:
+                    self.checkWin(self.hand)
 
             else:
                 del self.hand[tile]
 
             self.validHand = False
             if len(self.hand) + len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount == 13:
+                self.winTiles.clear()
                 self.checkTenpai()
             else:
                 self.tenpai = False
@@ -287,17 +312,29 @@ class Hand():
                         temp.append(head)
                         if len(temp) == 2:
                             hand = []
-                            for i in range((len(self.handCalls) - self.kanCount * 4) // 3):
-                                hand.append((self.handCalls[self.kanCount * 4 + i * 3],
-                                             self.handCalls[self.kanCount * 4 + i * 3 + 1],
-                                             self.handCalls[self.kanCount * 4 + i * 3 + 2]))
+                            if len(self.handCalls) > 0:
+                                for i in range((len(self.handCalls)) // 3):
+                                    hand.append((self.handCalls[i * 3], self.handCalls[i * 3 + 1],
+                                                 self.handCalls[i * 3 + 2]))
+                            if len(self.handCallsKan) > 0:
+                                if self.kanCount > 0:
+                                    for i in range((len(self.handCallsKan)) // 4):
+                                        hand.append((self.handCallsKan[i * 4], self.handCallsKan[i * 4 + 1],
+                                                     self.handCallsKan[i * 4 + 2],
+                                                     self.handCallsKan[i * 4 + 3]))
+                            if len(self.handCallsAnkan) > 0:
+                                if self.kanCount > 0:
+                                    for i in range((len(self.handCallsAnkan)) // 4):
+                                        hand.append((self.handCallsAnkan[i * 4], self.handCallsAnkan[i * 4 + 1],
+                                                     self.handCallsAnkan[i * 4 + 2],
+                                                     self.handCallsAnkan[i * 4 + 3]))
                             hand.append((head, head))
-                            print(hand)
                             possibleWins.append(hand)
 
 
         if len(possibleWins) > 0:
             print("True")
+            self.confirmedWins.clear()
             self.confirmedWins.append(possibleWins[0])
             return True
         else:
@@ -314,11 +351,8 @@ class Hand():
     def getChi(self,tile):
         if len(self.hand) > 0:
             if len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) > 0:
-                print(tile)
                 tile = tile - (len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan))
-                print(("tile2",tile))
             if tile < len(self.hand) - 2:
-                print("2222")
                 if self.hand.count(self.hand[tile]) > 0 and self.hand.count(self.hand[tile][0] + str(int(self.hand[tile][1]) + 1)) > 0 and self.hand.count(self.hand[tile][0] + str(int(self.hand[tile][1]) + 2)) > 0:
                     self.handCalls.append(self.hand[tile])
                     self.handCalls.append(self.hand[tile][0] + str(int(self.hand[tile][1]) + 1))
@@ -328,23 +362,38 @@ class Hand():
                     self.hand.remove(self.hand[tile][0] + str(int(self.hand[tile][1]) + 1))
                     self.hand.remove(self.hand[tile])
 
+            score.richiType = ""
+            score.iipatsuType = False
+
+            if len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount + len(self.hand) == 13:
+                self.checkTenpai()
+            elif len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount + len(self.hand) == 14:
+                self.checkWin(self.hand)
+
 
 
     def getPon(self,tile):
         if len(self.hand) > 0:
             if len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) > 0:
-                tile = tile - (len(self.handCalls) - len(self.handCallsKan) - len(self.handCallsAnkan) + self.kanCount)
+                tile = tile - (len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan))
             if tile < len(self.hand) - 2 and self.hand[tile + 1] == self.hand[tile] and self.hand[tile + 2] == self.hand[tile]:
                 if self.hand.count(self.hand[tile]) >= 3:
                     for _ in range(3):
                         self.handCalls.append(self.hand[tile])
                         self.hand.remove(self.hand[tile])
 
+            if len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount + len(self.hand) == 13:
+                self.checkTenpai()
+            elif len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount + len(self.hand) == 14:
+                self.checkWin(self.hand)
+
+            score.richiType = ""
+            score.iipatsuType = False
 
     def getKan(self,tile):
         if len(self.hand) > 0:
             if len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) > 0:
-                tile = tile - (len(self.handCalls) - len(self.handCallsKan) - len(self.handCallsAnkan) + self.kanCount)
+                tile = tile - (len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan))
             if tile < len(self.hand) - 3:
                 if self.hand.count(self.hand[tile]) == 4:
                     tile = self.hand[tile]
@@ -353,8 +402,35 @@ class Hand():
                         self.hand.remove(tile)
 
                     self.kanCount += 1
+
+            if len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount + len(self.hand) == 13:
+                self.checkTenpai()
+            elif len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount + len(self.hand) == 14:
+                self.checkWin(self.hand)
+
+            score.richiType = ""
+            score.iipatsuType = False
+
     def getAnkan(self,tile):
-        pass
+        if len(self.hand) > 0:
+            if len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) > 0:
+                tile = tile - (len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan))
+            if tile < len(self.hand) - 3:
+                if self.hand.count(self.hand[tile]) == 4:
+                    tile = self.hand[tile]
+                    self.handCallsAnkan.append("B0")
+                    self.handCallsAnkan.append(tile)
+                    self.handCallsAnkan.append(tile)
+                    self.handCallsAnkan.append("B0")
+                    for _ in range(4):
+                        self.hand.remove(tile)
+
+                    self.kanCount += 1
+
+            if len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount + len(self.hand) == 13:
+                self.checkTenpai()
+            elif len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount + len(self.hand) == 14:
+                self.checkWin(self.hand)
 
     def displayButtonShader(self):
         if self.buttonShader != 0:
@@ -362,12 +438,12 @@ class Hand():
                 if i == self.buttonShader:
                     continue
                 else:
-                    screen.blit(self.shader,(WMARGIN  + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * (i)))
+                    screen.blit(self.shader,(WMARGIN  + TILEWIDTH * 10,HEIGHT - HMARGIN - TILEHEIGHT * (i) - TILEHEIGHT))
             for i in range(5,8):
                 if i == self.buttonShader:
                     continue
                 else:
-                    screen.blit(self.shader,(WMARGIN  + TILEWIDTH * 2 + TILEWIDTH * i,HEIGHT - HMARGIN - TILEHEIGHT))
+                    screen.blit(self.shader,(WMARGIN  + TILEWIDTH * 2 + TILEWIDTH * i,HEIGHT - HMARGIN - TILEHEIGHT * 2))
 
     def displayDora(self):
         screen.blit(self.doraText,self.doraTextRect)
@@ -391,16 +467,22 @@ class Hand():
     def displayWin(self):
         if len(self.hand) + len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount == 14 and self.agari:
             screen.blit(self.agariText,self.agariTextRect)
-
             for hand in self.confirmedWins:
                 kanGap = 0
                 for i,shape in enumerate(hand):
+                    for j,tile in enumerate(shape):
+                        screen.blit(tiles.tileDict.get(tile),(WMARGIN + TILEWIDTH * (j + i * 3) + (TILEWIDTH // 2) * i + kanGap * TILEWIDTH,HMARGIN + TILEHEIGHT * 2))
                     if len(shape) == 4:
                         kanGap += 1
-                    for j,tile in enumerate(shape):
-                        screen.blit(tiles.tileDict.get(tile),(WMARGIN + TILEWIDTH * (j + i * 3) + (TILEWIDTH // 2) * i,HMARGIN + TILEHEIGHT * 2))
     def displayScore(self):
         pass
+
+    def displayWinds(self):
+        screen.blit(self.bakazeText,self.bakazeRect.topleft)
+        screen.blit(tiles.tileDict.get(self.bakaze[self.bakazeIndex]),(WMARGIN + TILEWIDTH * 8,HEIGHT - HMARGIN - TILEHEIGHT))
+        screen.blit(self.jikazeText, self.jikazeRect.topleft)
+        screen.blit(tiles.tileDict.get(self.jikaze[self.jikazeIndex]),
+                    (WMARGIN + TILEWIDTH * 9,HEIGHT - HMARGIN - TILEHEIGHT))
 
     def displayTileNumber(self):
         for i in range(len(self.hand) + len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan)):
@@ -424,7 +506,7 @@ class Hand():
             pos = (WMARGIN + TILEWIDTH * i + (len(self.handCallsKan) + len(self.handCalls)) * TILEWIDTH, HMARGIN)
             screen.blit(tiles.tileDict.get(self.handCallsAnkan[i]), pos)
 
-        for i in range(len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan)):
+        for i in range(len(self.handCalls) + len(self.handCallsKan)):
             screen.blit(self.shader, (WMARGIN + TILEWIDTH * i, HMARGIN))
 
     def printKanCount(self):
@@ -443,8 +525,7 @@ class Hand():
         self.displayDora()
         self.displayWin()
         self.printKanCount()
-        # print(self.winTiles)
-
+        self.displayWinds()
 
 
 hand = Hand()

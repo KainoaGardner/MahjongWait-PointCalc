@@ -1,6 +1,7 @@
 from hands import *
 from button import *
 from tiles import *
+from score import *
 
 def display():
     screen.fill("#95a5a6")
@@ -12,6 +13,8 @@ def display():
     for button in callButtonGroup:
         button.draw()
     hand.displayButtonShader()
+
+    score.display()
     # else:
     #     tiles.notNaki()
 

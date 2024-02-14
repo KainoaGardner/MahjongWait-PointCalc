@@ -14,6 +14,6 @@ HEIGHT = TILEHEIGHT * 9 + HMARGIN * 2
 screen = pygame.display.set_mode((WIDTH,HEIGHT))
 clock = pygame.time.Clock()
 
-font = pygame.font.Font("font/BIZUDPGothic-Regular.ttf",TILEWIDTH//2)
+font = pygame.font.Font("font/BIZUDPGothic-Regular.ttf",TILEWIDTH//3)
 
 white = "#ffffff"
