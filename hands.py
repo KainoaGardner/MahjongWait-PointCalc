@@ -24,6 +24,9 @@ class Hand():
         self.kanCount = 0
         self.buttonShader = 0
 
+        self.chitoi = False
+        self.kokushi = False
+
         self.dora = ""
         self.doraSelect = False
         self.doraText = self.font.render("ドラ", True, white)
@@ -67,6 +70,7 @@ class Hand():
             if len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) > 0:
                 if tile >= len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan):
                     del self.hand[tile - len(self.handCalls) - len(self.handCallsKan) - len(self.handCallsAnkan)]
+                    self.chitoi = False
                 elif tile >= len(self.handCalls) + len(self.handCallsKan):
                     if (tile - len(self.handCalls) + len(self.handCallsKan)) % 4 == 0:
                         for _ in range(4):
@@ -96,6 +100,7 @@ class Hand():
                     if tile < len(self.handCalls) - 2 and self.handCalls[tile + 1] == clickedTile[0] + str(int(clickedTile[1]) + 1) and self.handCalls[tile + 2] == clickedTile[0] + str(int(clickedTile[1]) + 2) and clickedTile[0] != "H":
                         for _ in range(3):
                             del self.handCalls[tile]
+                            self.chitoi = False
                     elif self.handCalls.count(self.handCalls[tile]) == 3 and tile < len(self.handCalls) - 2:
                         if self.handCalls[tile + 1] == clickedTile and self.handCalls[tile + 2] == clickedTile:
                             for _ in range(3):
@@ -175,6 +180,11 @@ class Hand():
     def clear(self):
         self.hand.clear()
         self.handCalls.clear()
+        self.handCallsKan.clear()
+        self.handcallsAnkan.clear()
+        self.agari = False
+        self.chitoi = False
+        self.kokushi = False
 
     def getHead(self,list):
         potentialHeads = []
@@ -255,7 +265,17 @@ class Hand():
                 tempList.append(list[i])
 
         potentialHeads = self.getHead(tempList)
-        if len(potentialHeads) > 0:
+        if len(potentialHeads) == 7:
+            tempHand = []
+            for i in range(0,len(tempList),2):
+                if tempList.count(tempList[i]) == 2:
+                    tempHand.append((tempList[i],tempList[i]))
+
+            if len(tempHand) == 7:
+                possibleWins.append(tempHand)
+                self.chitoi = True
+
+        elif len(potentialHeads) > 0:
                 for head in potentialHeads:
                     temp = tempList.copy()
                     win = self.getmentsu(temp,head)
@@ -467,13 +487,19 @@ class Hand():
     def displayWin(self):
         if len(self.hand) + len(self.handCalls) + len(self.handCallsKan) + len(self.handCallsAnkan) - self.kanCount == 14 and self.agari:
             screen.blit(self.agariText,self.agariTextRect)
-            for hand in self.confirmedWins:
-                kanGap = 0
-                for i,shape in enumerate(hand):
-                    for j,tile in enumerate(shape):
-                        screen.blit(tiles.tileDict.get(tile),(WMARGIN + TILEWIDTH * (j + i * 3) + (TILEWIDTH // 2) * i + kanGap * TILEWIDTH,HMARGIN + TILEHEIGHT * 2))
-                    if len(shape) == 4:
-                        kanGap += 1
+            if self.chitoi:
+                for hand in self.confirmedWins:
+                    for i,shape in enumerate(hand):
+                        for j,tile in enumerate(shape):
+                            screen.blit(tiles.tileDict.get(tile),(WMARGIN + TILEWIDTH * (j + i * 2) + (TILEWIDTH // 2) * i,HMARGIN + TILEHEIGHT * 2))
+            else:
+                for hand in self.confirmedWins:
+                    kanGap = 0
+                    for i,shape in enumerate(hand):
+                        for j,tile in enumerate(shape):
+                            screen.blit(tiles.tileDict.get(tile),(WMARGIN + TILEWIDTH * (j + i * 3) + (TILEWIDTH // 2) * i + kanGap * TILEWIDTH,HMARGIN + TILEHEIGHT * 2))
+                        if len(shape) == 4:
+                            kanGap += 1
     def displayScore(self):
         pass
 
