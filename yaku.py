@@ -1,4 +1,5 @@
-from hands import *
+from hands import hand
+from score import *
 
 def pinfu(list,winTiles):
     if (len(hand.handCalls) + len(hand.handCallsKan) + len(hand.handCallsAnkan)) == 0:
@@ -141,21 +142,30 @@ def shoudaisangen(list):
     if triplet == 2 and pair == 1:
         return ["小三元",2]
     elif triplet == 3:
-        return ["大三元"]
+        return ["大三元",1]
     else:
         return []
 
-def sanAnkou(list):    #fix sanankou for draw last tile add suuankou
+def sanAnkou(list):
     ankou = 0
+    pairWait = False
     for shape in list:
         if len(shape) == 3:
             if shape.count(shape[0]) == 3 and shape not in hand.handCalls:
-                ankou += 1
+                if hand.hand[-1] not in shape or score.winType == "tumo":
+                    ankou += 1
         elif len(shape) == 4 and shape not in hand.handCallsKan:
-            ankou += 1
+            if hand.hand[-1] not in shape or score.winType == "tumo":
+                ankou += 1
+        elif len(shape) == 2 and hand.hand[-1] in shape:
+            pairWait = True
 
-    if ankou >= 3:
+    if ankou == 3:
         return ["三暗刻",2]
+    elif ankou == 4 and pairWait == False:
+        return ["四暗刻",1]
+    elif ankou == 4 and pairWait == True:
+        return ["四暗刻単騎",2]
     else:
         return []
 
@@ -185,7 +195,7 @@ def honchinroutou(list):
     if triplet == 4 and honor > 0:
         return ['混老頭',2]
     elif triplet == 4 and honor == 0:
-        return ['清老頭']
+        return ['清老頭',1]
     else:
         return []
 
@@ -209,10 +219,126 @@ def sansuuKantsu(list):
     if kan == 3:
         return ["三槓子",2]
     elif kan == 4:
-        return ["四槓子"]
+        return ["四槓子",1]
     else:
         return []
 
+def honchiniitsu(list):
+    suitCount = 0
+    suit = ""
+    honor = 0
+    for shape in list:
+        if suit == "" and shape[1][0] != "H":
+            suit = shape[1][0]
+            suitCount += 1
+
+        elif shape[1][0] == suit:
+            suitCount += 1
+
+        elif shape[1][0] == "H":
+            honor += 1
+
+    if suitCount + honor == 5 and honor != 0:
+        if (len(hand.handCalls) + len(hand.handCallsKan)) > 0:
+            return ["混一色",2]
+        else:
+            return ["混一色", 3]
+    elif suitCount == 5 and honor == 0:
+        if (len(hand.handCalls) + len(hand.handCallsKan)) > 0:
+            return ["清一色",5]
+        else:
+            return ["清一色", 6]
+    else:
+        return []
+
+def kokushi(list,winTiles):
+    if len(list) == 14:
+        if len(winTiles) == 13:
+            return ["国士無双十三面待ち",2]
+        else:
+            return ["国士無双",1]
+    return []
+
+def chuuren(list,winTiles):
+    if len(hand.handCalls) + len(hand.handCallsKan) == 0:
+        tempList = []
+        for shape in list:
+            for tile in shape:
+                tempList.append(tile)
+
+        for suit in ["M","S","P"]:
+            if tempList.count(suit + "1") >= 3 and tempList.count(suit + "2") >= 1 and tempList.count(suit + "3") >= 1 and tempList.count(suit + "4") >= 1 and tempList.count(suit + "5") >= 1 \
+                    and tempList.count(suit + "6") >= 1 and tempList.count(suit + "7") >= 1 and tempList.count(suit + "8") >= 1 and tempList.count(suit + "9") >= 3:
+                if len(winTiles) == 9:
+                    return ["純正九蓮宝燈",2]
+                else:
+                    return ["九蓮宝燈",1]
+
+    return []
+
+def shoudaisuushii(list):
+    triplet = 0
+    pair = 0
+    for shape in list:
+        if len(shape) >= 3:
+            if shape[1] in ["H1","H2","H3","H4"]:
+                triplet += 1
+        elif len(shape) == 2:
+            if shape[1] in ["H1", "H2", "H3", "H4"]:
+                pair += 1
+
+    if triplet + pair == 4:
+        if pair > 0:
+            return ["小四喜",1]
+        else:
+            return ["大四喜",2]
+
+    return []
+
+
+def tsuiisou(list):
+    for shape in list:
+        for tile in shape:
+            if tile not in ["H1","H2","H3","H4","H5","H6","H7"]:
+                return []
+
+    return ["字一色",1]
+
+def ryuuiisou(list):
+    for shape in list:
+        for tile in shape:
+            if tile not in ["S2","S3","S4","S6","S8","H6"]:
+                return []
+
+    return ["緑一色",1]
+
+def getYakuList(hand,winTiles):
+    yakuList = []
+    yakuList.append(pinfu(hand,winTiles))
+    yakuList.append(iipeikou(hand))
+    yakuList.append(tanyao(hand))
+    yakuList.append(iitsu(hand))
+    yakuList.append(chanta(hand))
+    yakuList.append(toitoi(hand))
+    yakuList.append(shoudaisangen(hand))
+    # yakuList.append(sanAnkou(hand))
+    yakuList.append(honchinroutou(hand))
+    yakuList.append(sanshokudoukou(hand))
+    yakuList.append(sansuuKantsu(hand))
+    yakuList.append(honchiniitsu(hand))
+    yakuList.append(kokushi(hand,winTiles))
+    yakuList.append(chuuren(hand,winTiles))
+    yakuList.append(shoudaisuushii(hand))
+    yakuList.append(tsuiisou(hand))
+    yakuList.append(ryuuiisou(hand))
+
+    for i in range(len(yakuList) - 1,-1,-1):
+        if yakuList[i] == []:
+            del yakuList[i]
+
+    print(yakuList)
+
+getYakuList([('M1', 'M2', 'M3'), ('P5', 'P6', 'P7'), ('S7', 'S8', 'S9'), ('M7', 'M8', 'M9'), ('S1', 'S1')],['M6', 'M9'])
 
 # print(pinfu([('M1', 'M2', 'M3'), ('P5', 'P6', 'P7'), ('S7', 'S8', 'S9'), ('M7', 'M8', 'M9'), ('S1', 'S1')],['M6', 'M9']))
 # print(iipeikou([('M1', 'M2', 'M3'), ('M1', 'M2', 'M3'), ('S7', 'S8', 'S9'), ('S7', 'S8', 'S9'), ('S1', 'S1')]))
@@ -228,3 +354,9 @@ def sansuuKantsu(list):
 # print(honchinroutou([('M1', 'M1', 'M1'), ('P1', 'P1', 'P1'), ('P9', 'P9', 'P9'), ('S9', 'S9', 'S9'), ('H1', 'H1')]))
 # print(sanshokudoukou([('P5', 'P5', 'P5'), ('P7', 'P8', 'P9'), ('S5', 'S5', 'S5'), ('B0', 'M5', 'M5', 'B0'), ('H7', 'H7')]))
 # print(sansuuKantsu([('M1', 'M1', 'M1', 'M1'), ('H7', 'H7', 'H7', 'H7'), ('S9', 'S9', 'S9', 'S9'), ('B0', 'P9', 'P9', 'B0'), ('P7', 'P7')]))
+# print(honchiniitsu([('M5', 'M5', 'M5'), ('M1', 'M2', 'M3'), ('M3', 'M4', 'M5'), ('M7', 'M8', 'M9'), ('M8', 'M8')]))
+# print(kokushi(['M1', 'P1', 'P9', 'S1', 'S9', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'M9', 'M9'],['M1', 'M9', 'P1', 'P9', 'S1', 'S9', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7']))
+# print(chuuren([('M9', 'M9', 'M9'), ('M1', 'M2', 'M3'), ('M4', 'M5', 'M6'), ('M7', 'M8', 'M9'), ('M1', 'M1')],['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9']))
+# print(shoudaisuushii([('H1', 'H1', 'H1'), ('H2', 'H2', 'H2'), ('H3', 'H3', 'H3'), ('H4', 'H4', 'H4'), ('P7', 'P7')]))
+# print(tsuiisou([('H1', 'H1', 'H1'), ('H2', 'H2', 'H2'), ('H7', 'H7', 'H7'), ('H4', 'H4', 'H4'), ('H5', 'H5')]))
+# print(ryuuiisou([('H6', 'H6', 'H6'), ('S2', 'S2', 'S2'), ('S6', 'S6', 'S6'), ('S2', 'S3', 'S4'), ('S8', 'S8')]))

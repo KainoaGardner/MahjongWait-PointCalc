@@ -30,7 +30,6 @@ def main():
 
                     elif (WMARGIN < mos[0] < WMARGIN + TILEWIDTH * ((len(hand.hand) + len(hand.handCalls)) + len(hand.handCallsKan) + len(hand.handCallsAnkan)) and HMARGIN < mos[1] < HMARGIN + TILEHEIGHT):
                         tile = (mos[0] - WMARGIN) // TILEWIDTH
-                        print(tile)
                         if hand.callType == "chi":
                             hand.getChi(tile)
                         elif hand.callType == "pon":
@@ -69,7 +68,6 @@ def main():
                         hand.callType = ""
 
                     elif WMARGIN + TILEWIDTH < mos[0] < WMARGIN + TILEWIDTH * 8 and HEIGHT - HMARGIN - TILEHEIGHT < mos[1] < HEIGHT - HMARGIN:
-                        print("2")
                         if ronButton.getClicked(mos) and score.winType == "ron":
                             score.winType = "tumo"
                         elif tumoButton.getClicked(mos) and score.winType == "tumo":
