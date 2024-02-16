@@ -1,5 +1,4 @@
-from hands import hand
-from score import *
+from hands import *
 
 def pinfu(list,winTiles):
     if (len(hand.handCalls) + len(hand.handCallsKan) + len(hand.handCallsAnkan)) == 0:
@@ -314,14 +313,21 @@ def ryuuiisou(list):
 
 def getYakuList(hand,winTiles):
     yakuList = []
+    yakuMan = []
+
     yakuList.append(pinfu(hand,winTiles))
     yakuList.append(iipeikou(hand))
     yakuList.append(tanyao(hand))
+    result = yakuhai(hand)
+    for yakuhaiYaku in result:
+        yakuList.append(yakuhaiYaku)
+    yakuList.append(chitoi(hand))
+    yakuList.append(sanshokudoujyun(hand))
     yakuList.append(iitsu(hand))
     yakuList.append(chanta(hand))
     yakuList.append(toitoi(hand))
     yakuList.append(shoudaisangen(hand))
-    # yakuList.append(sanAnkou(hand))
+    yakuList.append(sanAnkou(hand))
     yakuList.append(honchinroutou(hand))
     yakuList.append(sanshokudoukou(hand))
     yakuList.append(sansuuKantsu(hand))
@@ -335,11 +341,24 @@ def getYakuList(hand,winTiles):
     for i in range(len(yakuList) - 1,-1,-1):
         if yakuList[i] == []:
             del yakuList[i]
+        elif yakuList[i] in ["大三元","四暗刻","四暗刻単騎",'清老頭',"四槓子","国士無双十三面待ち","国士無双","純正九蓮宝燈","九蓮宝燈","小四喜","大四喜","字一色","緑一色"]:
+            yakuMan.append(yakuList[i])
+            del yakuList[i]
 
-    print(yakuList)
+    if len(yakuMan) == 0:
+        han = 0
+        for yaku in yakuList:
+            han += yaku[1]
 
-getYakuList([('M1', 'M2', 'M3'), ('P5', 'P6', 'P7'), ('S7', 'S8', 'S9'), ('M7', 'M8', 'M9'), ('S1', 'S1')],['M6', 'M9'])
+        return yakuList,han
+    else:
+        yakumanCount = 0
+        for yakuman in yakuMan:
+            yakumanCount += yakuman[1]
+        return yakuMan,yakumanCount
 
+
+# yaku,han = getYakuList([('M1', 'M2', 'M3'), ('P5', 'P6', 'P7'), ('S7', 'S8', 'S9'), ('M7', 'M8', 'M9'), ('S1', 'S1')],['M6', 'M9'])
 # print(pinfu([('M1', 'M2', 'M3'), ('P5', 'P6', 'P7'), ('S7', 'S8', 'S9'), ('M7', 'M8', 'M9'), ('S1', 'S1')],['M6', 'M9']))
 # print(iipeikou([('M1', 'M2', 'M3'), ('M1', 'M2', 'M3'), ('S7', 'S8', 'S9'), ('S7', 'S8', 'S9'), ('S1', 'S1')]))
 # print(tanyao([('M4', 'M5', 'M6'), ('P2', 'P3', 'P4'), ('S5', 'S6', 'S7'), ('P6', 'P7', 'P8'), ('M8', 'M8')]))

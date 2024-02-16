@@ -1,5 +1,6 @@
 from tiles import *
-# from score import *
+from score import *
+
 class Hand():
     def __init__(self):
         self.hand = []
@@ -45,6 +46,7 @@ class Hand():
         self.jikazeRect = self.jikazeText.get_rect(center = (WMARGIN + TILEWIDTH * 9 + TILEWIDTH // 2,HEIGHT - HMARGIN + TILEWIDTH // 2))
 
         self.confirmedWins = []
+
 
 
     def addTile(self,tile):
@@ -515,8 +517,6 @@ class Hand():
                                 screen.blit(tiles.tileDict.get(tile),(WMARGIN + TILEWIDTH * (j + i * 3) + (TILEWIDTH // 2) * i + kanGap * TILEWIDTH,HMARGIN + TILEHEIGHT * 2))
                         if len(shape) == 4:
                             kanGap += 1
-    def displayScore(self):
-        pass
 
     def displayWinds(self):
         screen.blit(self.bakazeText,self.bakazeRect.topleft)
@@ -569,4 +569,6 @@ class Hand():
         self.displayWinds()
 
 
+
 hand = Hand()
+

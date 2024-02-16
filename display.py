@@ -15,6 +15,7 @@ def display():
     hand.displayButtonShader()
 
     score.display()
+    screen.blit(text, textRect)
     # else:
     #     tiles.notNaki()
 
