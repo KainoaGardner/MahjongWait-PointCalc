@@ -1,8 +1,6 @@
-from settings import *
 from button import *
 from tiles import *
-# def getScore(hand):
-#
+from yaku import *
 
 class Score():
     def __init__(self):
@@ -27,6 +25,7 @@ class Score():
         self.tenhouButton = tenHouButton
         self.tenhou = False
 
+        self.yaku = []
         self.fu = 0
         self.han = 0
         self.score = 0
@@ -79,4 +78,7 @@ class Score():
         self.displayButtons()
 
 
+
 score = Score()
+
+#
