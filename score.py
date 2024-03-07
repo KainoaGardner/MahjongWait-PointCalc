@@ -76,6 +76,7 @@ class Score():
             screen.blit(self.shader, (WMARGIN + TILEWIDTH * 7,HEIGHT - HMARGIN - TILEHEIGHT))
 
     def getWinYakuText(self,hand,winTiles):
+
         yakuList,han = getYakuList(hand,winTiles)
         if yakuList[0][0] in ["大三元","四暗刻","四暗刻単騎",'清老頭',"四槓子","国士無双十三面待ち","国士無双","純正九蓮宝燈","九蓮宝燈","小四喜","大四喜","字一色","緑一色"]:
             pass

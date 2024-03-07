@@ -176,7 +176,7 @@ class Hand():
         self.hand.clear()
         self.handCalls.clear()
         self.handCallsKan.clear()
-        self.handcallsAnkan.clear()
+        self.kanCount = 0
         self.agari = False
         self.kokushi = False
 
